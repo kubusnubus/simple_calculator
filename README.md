@@ -19,8 +19,8 @@ multiplication: marked by the '*' character, gathers input from both sides of th
 division: marked by the '/' character, gathers input from both sides of the character, division by zero will result in an error
 exponentiation: marked by the '^' character, gathers input from both sides of the character, exponentiating a negative number to a fractional power will result in NaN
 factorial: marked by the '!' character, gathers input from the left side of the character, the only argument values are the integers from 0 to 200 included, if input is not one of these numbers, it will result in an error
-sin: marked by the "sin" string, gathers input from the right side of the string (because of the current implementation, the further away the input is from 0, the less accurate the result will be, please try not to enter large values)
-cos: the same usage and ramifications as with the sin function
+sin: marked by the "sin" string, gathers input from the right side of the string
+cos: the same usage as the sin function
 tan: implemented as sin/cos, if the argument is one of pi/2 + k*pi (k being an integer), it will result in an error
 arcsin: marked by the "asin" string, gathers input from the right side of the string (because of the current implementation, the further away the input is from 0, the less accurate the result will be, please try not to enter values close to -1 or close to 1), the input being less that -1 or greater than 1 will result in an error
 arccos: marked by the "acos" string, other than that, it is the same as with the arcsin function
