@@ -139,7 +139,7 @@ fn exp(x: f64) -> f64 {
   let e: f64 = 2.71828182845904523536028;
   e.powf(x)
 }
-fn ln(x: f64) -> f64 {
+fn ln(x: f64) -> f64 {//println!("{}", x);
 	if x <= 0.0 {println!("ERROR: ln: argument not in the domain"); std::process::exit(0)}
 	let mut i: f64 = -1.0;
 	/*integer approximation of i:*/loop {
@@ -207,8 +207,8 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 	}
 	par_count = 0;
 	for ch in (lowerbound..=upperbound).rev() {
-		if list[ch][1] == ")" && par_count > 0 {par_count -= 1}
-		if list[ch][1] == "(" {par_count += 1}
+		if list[ch][1] == ")" {par_count += 1}
+		if list[ch][1] == "(" {par_count -= 1}
 		if list[ch][1] == "/" && par_count == 0 {return divide(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
 	}
 	par_count = 0;
