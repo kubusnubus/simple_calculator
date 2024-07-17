@@ -3,7 +3,7 @@
 A clumsily coded simple "smart" calculator, my first "real" coding project.
 
 ## SUPPORTED FEATURES:
-* functions: addition, subtraction, multiplication, division, exponentiation, factorial, sin, cos, tan, arcsin, arccos, arctan, exp, ln, log, sqrt, floor, ceil, mod
+* functions: addition, subtraction, multiplication, division, exponentiation, factorial, sin, cos, tan, arcsin, arccos, arctan, exp, ln, log, productlog, sqrt, floor, ceil, mod
 * parentheses
 * constants: pi, e
 

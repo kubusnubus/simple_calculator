@@ -14,6 +14,7 @@
 * exp: marked by the "exp", string, gathers input from the right side of the string, exp(x) is equivalent to e^x, imaginary numbers are not yet supported
 * ln: marked by the "ln" string, gathers input from the right side of the string, the input value being less than or equal to zero will result in an error
 * log: marked by the "log" string, gathers two inputs (first-base, second-the number of what the logarithm is taken) from the right separated by a comma, the two inputs need to be closed in parentheses (like log(a, b)), 'b' being less than or equal to zero, 'a' being equal to one or less than or equal to zero will result in an error
+* productlog: marked by the 'W' character, gathers two inputs (first-the branch, -1 for the negative part of the domain or 0 for the entire domain, second-the number of what the productlog is taken) from the right side separated by a comma, the two inputs need to be closed in parentheses (like W(a, b)), 'b' being less than -e^(-1) will cause an error, the branch being equal to -1 for x greater than or equal to 0 will also result in an error
 * sqrt: marked by the "sqrt" string, gathers input from the right side of the string, the input value being less than zero will result in an error
 * floor: marked by the "floor" string, gathers input from the right side of the string
 * ceil: marked by the "ceil" string, gathers input from the right side of the string

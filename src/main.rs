@@ -84,6 +84,14 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 			for h in ch..list.len() {minuslist.push(list[h].clone())}
 			list = minuslist
 		}
+		if list[ch][1] == "-" && list[ch-1][1] == "," {
+			let mut minuslist: Vec<Vec<String>> = vec![vec![]];
+			minuslist.remove(0);
+			for h in 0..ch {minuslist.push(list[h].clone())}
+			minuslist.push(vec!["number".to_string(), "0".to_string()]);
+			for h in ch..list.len() {minuslist.push(list[h].clone())}
+			list = minuslist
+		}
 	}
   list
 }
@@ -196,6 +204,27 @@ fn log(a: f64, b: f64) -> f64 {
 	if a == 1.0 || a <= 0.0 {println!("ERROR: log: first argument not in the domain"); std::process::exit(0)}
 	ln(b)/ln(a)
 }
+fn productlog(branch: f64, x: f64) -> f64 {
+	if x < -exp(-1.0) {println!("ERROR: W: second argument not in the domain"); std::process::exit(0)}
+	if branch != -1.0 && branch != 0.0 {println!("ERROR: W: first argument not one of -1, 0"); std::process::exit(0)}
+	if branch == -1.0 && x >= 0.0 {println!("ERROR: W: for second argument >= 0, only the 0 branch is available"); std::process::exit(0)}
+	let mut i: f64 = 0.0;
+	if branch == -1.0 {
+		i = -2.0;
+		for _n in 0..200 {i = i - (i*exp(i) - x)/(exp(i)*(i+1.0));}
+	}
+	if branch == 0.0 {
+		i = -0.9;
+		loop {//integer approximation of i:
+		  if i*exp(i) <= x && x < (i + 1.0)*exp(i + 1.0) {
+		    break
+		  }
+		  i += 1.0
+		}
+		for _n in 0..200 {i = i - (i*exp(i) - x)/(exp(i)*(i+1.0));}
+	}
+	i
+}
 fn sqrt(x: f64) -> f64 {
 	if x < 0.0 {println!("ERROR: sqrt: argument not in the domain"); std::process::exit(0)}
 	x.powf(0.5)
@@ -301,25 +330,25 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 		if list[ch][1] == "acos" && par_count == 0 {return arccos(evalu8(list.clone(), lowerbound+1, upperbound))}
 	}
 	par_count = 0;
-		for ch in lowerbound..=upperbound {
+	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
 		if list[ch][1] == ")" {par_count -= 1}
 		if list[ch][1] == "atan" && par_count == 0 {return arctan(evalu8(list.clone(), lowerbound+1, upperbound))}
 	}
 	par_count = 0;
-		for ch in lowerbound..=upperbound {
+	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
 		if list[ch][1] == ")" {par_count -= 1}
 		if list[ch][1] == "exp" && par_count == 0 {return exp(evalu8(list.clone(), lowerbound+1, upperbound))}
 	}
 	par_count = 0;
-		for ch in lowerbound..=upperbound {
+	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
 		if list[ch][1] == ")" {par_count -= 1}
 		if list[ch][1] == "ln" && par_count == 0 {return ln(evalu8(list.clone(), lowerbound+1, upperbound))}
 	}
 	par_count = 0;
-		for ch in lowerbound..=upperbound {
+	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
 		if list[ch][1] == ")" {par_count -= 1}
 		if list[ch][1] == "log" && par_count == 0 {
@@ -329,6 +358,19 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 				if list[n][1] == "," && par_count == 1 {return log(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, upperbound-1))}
 			}
 			println!("ERROR: log: no comma between arguments found"); std::process::exit(0)
+		}
+	}
+	par_count = 0;
+	for ch in lowerbound..=upperbound {
+		if list[ch][1] == "(" {par_count += 1}
+		if list[ch][1] == ")" {par_count -= 1}
+		if list[ch][1] == "W" && par_count == 0 {
+			for n in lowerbound+1..=upperbound {
+				if list[n][1] == "(" {par_count += 1}
+				if list[n][1] == ")" {par_count -= 1}
+				if list[n][1] == "," && par_count == 1 {return productlog(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, upperbound-1))}
+			}
+			println!("ERROR: W: no comma between arguments found"); std::process::exit(0)
 		}
 	}
 	par_count = 0;
