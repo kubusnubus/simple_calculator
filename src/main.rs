@@ -399,9 +399,12 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 }
 
 fn main() {
-  println!("Enter an expression:");
-  let mut expr = String::new();
-  let _ = io::stdin().read_line(&mut expr);
-  let listfromstring: Vec<Vec<String>> = listovac(expr.clone());
-  println!("{}", evalu8(listfromstring.clone(), 0, listfromstring.len()-1))
+	loop{
+  	println!("Enter an expression:");
+  	let mut expr = String::new();
+  	let _ = io::stdin().read_line(&mut expr);
+  	let listfromstring: Vec<Vec<String>> = listovac(expr.clone());
+  	println!("= {}", evalu8(listfromstring.clone(), 0, listfromstring.len()-1))
+  }
 }
+
