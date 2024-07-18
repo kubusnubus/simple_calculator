@@ -10,8 +10,8 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   let list_of_expr_chars: Vec<char> = expr.chars().collect();
   let mut list: Vec<Vec<String>> = vec![vec![]];
   list.remove(0);
-  //0->num 1->() 2->2side_fn 3->chars 4->comma
-  let types_of_chars: Vec<Vec<String>> = vec![vec!["0".to_string(), "1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "5".to_string(), "6".to_string(), "7".to_string(), "8".to_string(), "9".to_string(), ".".to_string()], vec!["(".to_string(), ")".to_string()], vec!["+".to_string(), "-".to_string(), "*".to_string(), "/".to_string(), "^".to_string()], vec!["!".to_string(),	"a".to_string(), "b".to_string(), "c".to_string(), "d".to_string(), "e".to_string(), "f".to_string(), "g".to_string(), "h".to_string(), "i".to_string(), "j".to_string(), "k".to_string(), "l".to_string(), "m".to_string(), "n".to_string(), "o".to_string(), "p".to_string(), "q".to_string(), "r".to_string(), "s".to_string(), "t".to_string(), "u".to_string(), "v".to_string(), "w".to_string(), "x".to_string(), "y".to_string(), "z".to_string(), "W".to_string()], vec![",".to_string()]];
+  //0->num 1->() 2->2side_fn 3->chars 4->comma 5->k (indexace u sumy a produktu)
+  let types_of_chars: Vec<Vec<String>> = vec![vec!["0".to_string(), "1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "5".to_string(), "6".to_string(), "7".to_string(), "8".to_string(), "9".to_string(), ".".to_string()], vec!["(".to_string(), ")".to_string()], vec!["+".to_string(), "-".to_string(), "*".to_string(), "/".to_string(), "^".to_string()], vec!["!".to_string(),	"a".to_string(), "b".to_string(), "c".to_string(), "d".to_string(), "e".to_string(), "f".to_string(), "g".to_string(), "h".to_string(), "i".to_string(), "j".to_string(), /*"k".to_string(),*/ "l".to_string(), "m".to_string(), "n".to_string(), "o".to_string(), "p".to_string(), "q".to_string(), "r".to_string(), "s".to_string(), "t".to_string(), "u".to_string(), "v".to_string(), "w".to_string(), "x".to_string(), "y".to_string(), "z".to_string(), "W".to_string()], vec![",".to_string()], vec!["k".to_string()]];
   let mut last_type: usize = 5;
   for ch in 0..expr.len() {
   	'outer: for k in 0..types_of_chars.len() {
@@ -45,11 +45,12 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   			  }
   			}
   			if list_of_expr_chars[ch].to_string() == types_of_chars[k][l] && k == 4 {list.push(vec!["comma".to_string(), list_of_expr_chars[ch].to_string()]); last_type = 4; break 'outer}
-  			if list_of_expr_chars[ch].to_string() != types_of_chars[k][l] && k == 4 && l == types_of_chars[4].len()-1 {println!("ERROR: unsupported character: {}", list_of_expr_chars[ch]); std::process::exit(0)}
+  			if list_of_expr_chars[ch].to_string() == types_of_chars[k][l] && k == 5 {list.push(vec!["index_var".to_string(), list_of_expr_chars[ch].to_string()]); last_type = 5; break 'outer}
+  			if list_of_expr_chars[ch].to_string() != types_of_chars[k][l] && k == 5 && l == types_of_chars[5].len()-1 {println!("ERROR: unsupported character: {}", list_of_expr_chars[ch]); std::process::exit(0)}
   		}
   	}
   }
-  let fn_list: Vec<String> = vec![",".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
+  let fn_list: Vec<String> = vec!["sum".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
   let const_list: Vec<String> = vec!["pi".to_string(), "e".to_string()];
   for ch in 0..list.len() {
   	 	if list[ch][0] == "unary_fn/const" {
@@ -68,6 +69,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   	}
   }
   //println!("With constants: {:?}", list);
+  let mut par_count: i32 = 0;
   for ch in 0..list.len() {
 		if list[ch][1] == "pi" {list[ch][1] = "3.14159265358979323846".to_string(); list[ch][0] = "number".to_string()}
 		if list[ch][1] == "e" {list[ch][1] = "2.71828182845904523536".to_string(); list[ch][0] = "number".to_string()}
@@ -92,7 +94,11 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 			for h in ch..list.len() {minuslist.push(list[h].clone())}
 			list = minuslist
 		}
+		if list[ch][1] == "(" {par_count += 1}
+		if list[ch][1] == ")" {par_count -= 1}
 	}
+	if par_count < 0 {println!("ERROR: not enough opening parentheses"); std::process::exit(0)}
+	if par_count > 0 {println!("ERROR: not enough closing parentheses"); std::process::exit(0)}
   list
 }
 
@@ -254,9 +260,26 @@ fn modulo(a: f64, b: f64) -> f64 {
 	if b == 0.0 {println!("ERROR: mod: the second argument cannot be zero"); std::process::exit(0)}
 	a - b*floor(a/b)
 }
+fn sum(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>) -> f64 {
+	if floor(start_tmp) != start_tmp {println!("ERROR: sum: the first argument must be an integer"); std::process::exit(0)}
+	if floor(stop_tmp) != stop_tmp {println!("ERROR: sum: the second argument must be an integer"); std::process::exit(0)}
+	let start: usize = start_tmp.floor() as usize;
+	let stop: usize = stop_tmp.floor() as usize;
+	let mut list: Vec<Vec<String>> = list_tmp.clone();
+	let mut res: f64 = 0.0;
+	for n in start..=stop {
+		for ch in exprstart..=exprstop {
+			if list[ch][1] == "k" {list[ch][1] = n.to_string()}
+		}
+		res += evalu8(list.clone(), exprstart, exprstop);
+		list = list_tmp.clone()
+	}
+	res
+}
 
 fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
-	if lowerbound == upperbound {return list[lowerbound][1].parse::<f64>().unwrap()}
+	if lowerbound == upperbound && list[lowerbound][0] == "number" {return list[lowerbound][1].parse::<f64>().unwrap()}
+	if lowerbound == upperbound && list[lowerbound][0] != "number" {println!("ERROR: invalid input"); std::process::exit(0)}
 	let mut par_count: u32 = 0;
 	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
@@ -391,6 +414,26 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 		if list[ch][1] == ")" {par_count -= 1}
 		if list[ch][1] == "ceil" && par_count == 0 {return ceil(evalu8(list.clone(), lowerbound+1, upperbound))}
 	}
+	par_count = 0;
+	for ch in lowerbound..=upperbound {
+		if list[ch][1] == "(" {par_count += 1}
+		if list[ch][1] == ")" {par_count -= 1}
+		if list[ch][1] == "sum" && par_count == 0 {
+			for n in lowerbound+1..=upperbound {
+				if list[n][1] == "(" {par_count += 1}
+				if list[n][1] == ")" {par_count -= 1}
+				if list[n][1] == "," && par_count == 1 {
+					for k in n+1..=upperbound {
+						if list[k][1] == "(" {par_count += 1}
+						if list[k][1] == ")" {par_count -= 1}
+						if list[k][1] == "," && par_count == 1 {return sum(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
+					}
+					println!("ERROR: sum: only one comma between arguments found"); std::process::exit(0)
+				}
+			}
+			println!("ERROR: sum: no comma between arguments found"); std::process::exit(0)
+		}
+	}
 	
 	if list[lowerbound][1] == "(" && list[upperbound][1] == ")" {return evalu8(list.clone(), lowerbound+1, upperbound-1)}
 	
@@ -407,4 +450,3 @@ fn main() {
   	println!("= {}", evalu8(listfromstring.clone(), 0, listfromstring.len()-1))
   }
 }
-
