@@ -20,3 +20,4 @@
 * ceil: marked by the "ceil" string, gathers input from the right side of the string
 * mod: marked by the "mod" string, gathers input from both sides of the string, the second input value being equal to zero will result in an error
 * sum (capital sigma): marked by the "sum" string, gathers three arguments from the right side (first-the number the summation starts on, second-the number the summation ends on, third-the summed up expression, 'k' being the index variable), invalid number of commas (precisely two are needed) will result in an error, the three arguments need to be closed in parentheses (like sum(1, 10, k))
+* product (capital pi): marked by the "prod" string, the usage is the same as with the sum function

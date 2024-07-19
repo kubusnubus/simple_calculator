@@ -50,7 +50,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   		}
   	}
   }
-  let fn_list: Vec<String> = vec!["sum".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
+  let fn_list: Vec<String> = vec!["prod".to_string(), "sum".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
   let const_list: Vec<String> = vec!["pi".to_string(), "e".to_string()];
   for ch in 0..list.len() {
   	 	if list[ch][0] == "unary_fn/const" {
@@ -276,10 +276,25 @@ fn sum(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, list_tm
 	}
 	res
 }
+fn prod(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>) -> f64 {
+	if floor(start_tmp) != start_tmp {println!("ERROR: prod: the first argument must be an integer"); std::process::exit(0)}
+	if floor(stop_tmp) != stop_tmp {println!("ERROR: prod: the second argument must be an integer"); std::process::exit(0)}
+	let start: usize = start_tmp.floor() as usize;
+	let stop: usize = stop_tmp.floor() as usize;
+	let mut list: Vec<Vec<String>> = list_tmp.clone();
+	let mut res: f64 = 1.0;
+	for n in start..=stop {
+		for ch in exprstart..=exprstop {
+			if list[ch][1] == "k" {list[ch][1] = n.to_string()}
+		}
+		res *= evalu8(list.clone(), exprstart, exprstop);
+		list = list_tmp.clone()
+	}
+	res
+}
 
 fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
-	if lowerbound == upperbound && list[lowerbound][0] == "number" {return list[lowerbound][1].parse::<f64>().unwrap()}
-	if lowerbound == upperbound && list[lowerbound][0] != "number" {println!("ERROR: invalid input"); std::process::exit(0)}
+	if lowerbound == upperbound {return list[lowerbound][1].parse::<f64>().unwrap()}
 	let mut par_count: u32 = 0;
 	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
@@ -432,6 +447,26 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 				}
 			}
 			println!("ERROR: sum: no comma between arguments found"); std::process::exit(0)
+		}
+	}
+	par_count = 0;
+	for ch in lowerbound..=upperbound {
+		if list[ch][1] == "(" {par_count += 1}
+		if list[ch][1] == ")" {par_count -= 1}
+		if list[ch][1] == "prod" && par_count == 0 {
+			for n in lowerbound+1..=upperbound {
+				if list[n][1] == "(" {par_count += 1}
+				if list[n][1] == ")" {par_count -= 1}
+				if list[n][1] == "," && par_count == 1 {
+					for k in n+1..=upperbound {
+						if list[k][1] == "(" {par_count += 1}
+						if list[k][1] == ")" {par_count -= 1}
+						if list[k][1] == "," && par_count == 1 {return prod(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
+					}
+					println!("ERROR: prod: only one comma between arguments found"); std::process::exit(0)
+				}
+			}
+			println!("ERROR: prod: no comma between arguments found"); std::process::exit(0)
 		}
 	}
 	
