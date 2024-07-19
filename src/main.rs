@@ -10,9 +10,9 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   let list_of_expr_chars: Vec<char> = expr.chars().collect();
   let mut list: Vec<Vec<String>> = vec![vec![]];
   list.remove(0);
-  //0->num 1->() 2->2side_fn 3->chars 4->comma 5->k (indexace u sumy a produktu)
-  let types_of_chars: Vec<Vec<String>> = vec![vec!["0".to_string(), "1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "5".to_string(), "6".to_string(), "7".to_string(), "8".to_string(), "9".to_string(), ".".to_string()], vec!["(".to_string(), ")".to_string()], vec!["+".to_string(), "-".to_string(), "*".to_string(), "/".to_string(), "^".to_string()], vec!["!".to_string(),	"a".to_string(), "b".to_string(), "c".to_string(), "d".to_string(), "e".to_string(), "f".to_string(), "g".to_string(), "h".to_string(), "i".to_string(), "j".to_string(), /*"k".to_string(),*/ "l".to_string(), "m".to_string(), "n".to_string(), "o".to_string(), "p".to_string(), "q".to_string(), "r".to_string(), "s".to_string(), "t".to_string(), "u".to_string(), "v".to_string(), "w".to_string(), "x".to_string(), "y".to_string(), "z".to_string(), "W".to_string()], vec![",".to_string()], vec!["k".to_string()]];
-  let mut last_type: usize = 5;
+  //0->num 1->() 2->2side_fn 3->chars 4->comma 5->k (indexace u sumy a produktu) 6->x (integrační proměnná)
+  let types_of_chars: Vec<Vec<String>> = vec![vec!["0".to_string(), "1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "5".to_string(), "6".to_string(), "7".to_string(), "8".to_string(), "9".to_string(), ".".to_string()], vec!["(".to_string(), ")".to_string()], vec!["+".to_string(), "-".to_string(), "*".to_string(), "/".to_string(), "^".to_string()], vec!["!".to_string(),	"a".to_string(), "b".to_string(), "c".to_string(), "d".to_string(), "e".to_string(), "f".to_string(), "g".to_string(), "h".to_string(), "i".to_string(), "j".to_string(), /*"k".to_string(),*/ "l".to_string(), "m".to_string(), "n".to_string(), "o".to_string(), "p".to_string(), "q".to_string(), "r".to_string(), "s".to_string(), "t".to_string(), "u".to_string(), "v".to_string(), "w".to_string(), /*"x".to_string(),*/ "y".to_string(), "z".to_string(), "W".to_string()], vec![",".to_string()], vec!["k".to_string()], vec!["x".to_string()]];
+  let mut last_type: usize = 7;
   for ch in 0..expr.len() {
   	'outer: for k in 0..types_of_chars.len() {
   		for l in 0..types_of_chars[k].len() {
@@ -46,11 +46,12 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   			}
   			if list_of_expr_chars[ch].to_string() == types_of_chars[k][l] && k == 4 {list.push(vec!["comma".to_string(), list_of_expr_chars[ch].to_string()]); last_type = 4; break 'outer}
   			if list_of_expr_chars[ch].to_string() == types_of_chars[k][l] && k == 5 {list.push(vec!["index_var".to_string(), list_of_expr_chars[ch].to_string()]); last_type = 5; break 'outer}
-  			if list_of_expr_chars[ch].to_string() != types_of_chars[k][l] && k == 5 && l == types_of_chars[5].len()-1 {println!("ERROR: unsupported character: {}", list_of_expr_chars[ch]); std::process::exit(0)}
+  			if list_of_expr_chars[ch].to_string() == types_of_chars[k][l] && k == 6 {list.push(vec!["int_var".to_string(), list_of_expr_chars[ch].to_string()]); last_type = 6; break 'outer}
+  			if list_of_expr_chars[ch].to_string() != types_of_chars[k][l] && k == 6 && l == types_of_chars[6].len()-1 {println!("ERROR: unsupported character: {}", list_of_expr_chars[ch]); std::process::exit(0)}
   		}
   	}
   }
-  let fn_list: Vec<String> = vec!["prod".to_string(), "sum".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
+  let fn_list: Vec<String> = vec!["int".to_string(), "prod".to_string(), "sum".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
   let const_list: Vec<String> = vec!["pi".to_string(), "e".to_string()];
   for ch in 0..list.len() {
   	 	if list[ch][0] == "unary_fn/const" {
@@ -94,6 +95,8 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 			for h in ch..list.len() {minuslist.push(list[h].clone())}
 			list = minuslist
 		}
+	}
+	for ch in 0..list.len() {
 		if list[ch][1] == "(" {par_count += 1}
 		if list[ch][1] == ")" {par_count -= 1}
 	}
@@ -292,6 +295,38 @@ fn prod(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, list_t
 	}
 	res
 }
+fn int(a: f64, b: f64, exprstart: usize, exprstop_tmp: usize, list_tmp: Vec<Vec<String>>) -> f64 {
+	let mut list: Vec<Vec<String>> = list_tmp.clone();
+	let n: f64 = 100000.0;
+	let mut exprstop: usize = exprstop_tmp.clone();
+	'outer: loop {
+		for ch in exprstart..=exprstop {
+			if list[ch][1] == "x" {
+				let mut list_tmp_tmp = vec![vec![]];
+				list_tmp_tmp.remove(0);
+				for i in 0..ch {list_tmp_tmp.push(list[i].clone())}
+				list_tmp_tmp.push(vec!["".to_string(), "(".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), a.to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "+".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "k".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "*".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "(".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), b.to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "-".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), a.to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), ")".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "/".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), n.to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), ")".to_string()]);
+				for i in ch+1..list.len() {list_tmp_tmp.push(list[i].clone())}
+				list = list_tmp_tmp;
+				exprstop += 12
+			}
+			if ch == exprstop {break 'outer}
+		}
+	}
+	((b-a)/n)*sum(0.0, n, exprstart, exprstop, list)
+}
 
 fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 	if lowerbound == upperbound {return list[lowerbound][1].parse::<f64>().unwrap()}
@@ -467,6 +502,26 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 				}
 			}
 			println!("ERROR: prod: no comma between arguments found"); std::process::exit(0)
+		}
+	}
+	par_count = 0;
+	for ch in lowerbound..=upperbound {
+		if list[ch][1] == "(" {par_count += 1}
+		if list[ch][1] == ")" {par_count -= 1}
+		if list[ch][1] == "int" && par_count == 0 {
+			for n in lowerbound+1..=upperbound {
+				if list[n][1] == "(" {par_count += 1}
+				if list[n][1] == ")" {par_count -= 1}
+				if list[n][1] == "," && par_count == 1 {
+					for k in n+1..=upperbound {
+						if list[k][1] == "(" {par_count += 1}
+						if list[k][1] == ")" {par_count -= 1}
+						if list[k][1] == "," && par_count == 1 {return int(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
+					}
+					println!("ERROR: int: only one comma between arguments found"); std::process::exit(0)
+				}
+			}
+			println!("ERROR: int: no comma between arguments found"); std::process::exit(0)
 		}
 	}
 	
