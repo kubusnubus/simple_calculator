@@ -79,7 +79,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 			for h in 0..list.len() {minuslist.push(list[h].clone())}
 			list = minuslist
 		}
-		if list[ch][1] == "-" && list[ch-1][1] == "(" {
+		if list[ch][1] == "-" && (list[ch-1][1] == "(" || list[ch-1][1] == ",") {
 			let mut minuslist: Vec<Vec<String>> = vec![vec![]];
 			minuslist.remove(0);
 			for h in 0..ch {minuslist.push(list[h].clone())}
@@ -87,13 +87,15 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 			for h in ch..list.len() {minuslist.push(list[h].clone())}
 			list = minuslist
 		}
-		if list[ch][1] == "-" && list[ch-1][1] == "," {
-			let mut minuslist: Vec<Vec<String>> = vec![vec![]];
-			minuslist.remove(0);
-			for h in 0..ch {minuslist.push(list[h].clone())}
-			minuslist.push(vec!["number".to_string(), "0".to_string()]);
-			for h in ch..list.len() {minuslist.push(list[h].clone())}
-			list = minuslist
+	}
+	for ch in 0..list.len()-1 {//implicit multiplication
+		if (list[ch][0] == "number" || list[ch][0] == "unary_fn") && (list[ch+1][0] == "number" || list[ch+1][0] == "unary_fn") {
+			let mut implicitlist: Vec<Vec<String>> = vec![vec![]];
+			implicitlist.remove(0);
+			for h in 0..=ch {implicitlist.push(list[h].clone())}
+			implicitlist.push(vec!["binary_fn".to_string(), "*".to_string()]);
+			for h in ch+1..list.len() {implicitlist.push(list[h].clone())}
+			list = implicitlist
 		}
 	}
 	for ch in 0..list.len() {
@@ -114,9 +116,9 @@ fn divide(a: f64, b: f64) -> f64 {
 	}
 fn power(a: f64, b: f64) -> f64 {a.powf(b)}
 fn fact(n: f64) -> f64 {
-	for k in 0..=200 {
+	for k in 0..=201 {
 		if n == k as f64 {break}
-		if k == 200 {println!("ERROR: factorial: argument is not one of 0..=200"); std::process::exit(0)}
+		if k == 21 {println!("ERROR: factorial: argument is not one of 0..=21"); std::process::exit(0)}
 	}
 	if n == 0.0 {return 1.0}
 	n*fact(n-1.0)
@@ -131,55 +133,30 @@ fn sin(a: f64) -> f64 {
 	}
 	if x < -6.2831853071795864769 {
 		loop {
-			if x > -6.2831853071795864769 {break}
+			if x > 0.0 {break}
 			x += 6.2831853071795864769;
 		}
 	}
 	let mut res: f64 = 0.0;
 	let mut u: f64 = 1.0;
-	for n in 0..100 {
+	for n in 0..=10 {
 		if n % 2 == 0 {u = 1.0}
 		else {u = -1.0}
 		res += u*(x.powf(2.0*(n as f64)+1.0))/fact(2.0*(n as f64)+1.0)
 	}
+	if x > 3.1415926535897932385 {return -sin(x - 3.1415926535897932385)}
 	res
 }
-fn cos(a: f64) -> f64 {
-	let mut x: f64 = a;
-	if x > 6.2831853071795864769 {
-		loop {
-			if x < 6.2831853071795864769 {break}
-			x -= 6.2831853071795864769;
-		}
-	}
-	if x < -6.2831853071795864769 {
-		loop {
-			if x > -6.2831853071795864769 {break}
-			x += 6.2831853071795864769;
-		}
-	}
+fn cos(x: f64) -> f64 {
 	sin(x+1.57079632679489661923)
 	}
-fn tan(a: f64) -> f64 {
-	let mut x: f64 = a;
-	if x > 3.14159265358979323846 {
-		loop {
-			if x < 3.14159265358979323846 {break}
-			x -= 3.14159265358979323846;
-		}
-	}
-	if x < -3.14159265358979323846 {
-		loop {
-			if x > -3.14159265358979323846 {break}
-			x += 3.14159265358979323846;
-		}
-	}
+fn tan(x: f64) -> f64 {
 	if cos(x) == 0.0 {println!("ERROR: tan: argument not in the domain"); std::process::exit(0)}
-	(sin(x))/(cos(x))}
+	sin(x)/cos(x)}
 fn arcsin(x: f64) -> f64 {
 	if x > 1.0 || x < -1.0 {println!("ERROR: arcsin: argument not in the domain"); std::process::exit(0)}
   let mut res: f64 = 0.0;
-  for k in 0..1000 {
+  for k in 0..2000 {
     let mut prod: f64 = 1.0;
     for l in 0..k {
       prod *= (0.5 + (l as f64))/(1.0 + (l as f64))
@@ -297,7 +274,7 @@ fn prod(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, list_t
 }
 fn int(a: f64, b: f64, exprstart: usize, exprstop_tmp: usize, list_tmp: Vec<Vec<String>>) -> f64 {
 	let mut list: Vec<Vec<String>> = list_tmp.clone();
-	let n: f64 = 100000.0;
+	let n: f64 = 200000.0;
 	let mut exprstop: usize = exprstop_tmp.clone();
 	'outer: loop {
 		for ch in exprstart..=exprstop {
