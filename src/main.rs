@@ -89,7 +89,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 		}
 	}
 	for ch in 0..list.len()-1 {//implicit multiplication
-		if (list[ch][0] == "number" || list[ch][0] == "unary_fn") && (list[ch+1][0] == "number" || list[ch+1][0] == "unary_fn") {
+		if list[ch][0] == "number" && list[ch+1][0] == "number" {
 			let mut implicitlist: Vec<Vec<String>> = vec![vec![]];
 			implicitlist.remove(0);
 			for h in 0..=ch {implicitlist.push(list[h].clone())}
@@ -116,7 +116,7 @@ fn divide(a: f64, b: f64) -> f64 {
 	}
 fn power(a: f64, b: f64) -> f64 {a.powf(b)}
 fn fact(n: f64) -> f64 {
-	for k in 0..=201 {
+	for k in 0..=21 {
 		if n == k as f64 {break}
 		if k == 21 {println!("ERROR: factorial: argument is not one of 0..=21"); std::process::exit(0)}
 	}
@@ -314,11 +314,11 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 		if list[ch][1] == "+" && par_count == 0 {return plus(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
 	}
 	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "-" && par_count == 0 {return minus(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
-	}
+		for ch in (lowerbound..=upperbound).rev() {
+			if list[ch][1] == ")" {par_count += 1}
+			if list[ch][1] == "(" {par_count -= 1}
+			if list[ch][1] == "-" && par_count == 0 {return minus(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
+		}
 	par_count = 0;
 	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
