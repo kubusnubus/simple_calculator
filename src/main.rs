@@ -51,7 +51,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   		}
   	}
   }
-  let fn_list: Vec<String> = vec!["int".to_string(), "prod".to_string(), "sum".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
+  let fn_list: Vec<String> = vec!["der".to_string(), "int".to_string(), "prod".to_string(), "sum".to_string(), "ceil".to_string(), "floor".to_string(), "mod".to_string(), "!".to_string(), "sqrt".to_string(), "ln".to_string(), "exp".to_string(), "log".to_string(), "sin".to_string(), "cos".to_string(), "tan".to_string(), "asin".to_string(), "acos".to_string(), "atan".to_string(), "W".to_string()];
   let const_list: Vec<String> = vec!["pi".to_string(), "e".to_string()];
   for ch in 0..list.len() {
   	 	if list[ch][0] == "unary_fn/const" {
@@ -104,6 +104,10 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 	}
 	if par_count < 0 {println!("ERROR: not enough opening parentheses"); std::process::exit(0)}
 	if par_count > 0 {println!("ERROR: not enough closing parentheses"); std::process::exit(0)}
+	for ch in 0..list.len() {
+		if list[ch][0] == "number" {break}
+		if ch == list.len()-1 {println!("ERROR: expression does not contain any numbers"); std::process::exit(0)}
+	}
   list
 }
 
@@ -216,21 +220,7 @@ fn sqrt(x: f64) -> f64 {
 	x.powf(0.5)
 }
 fn floor(x: f64) -> f64 {
-	let mut i: f64 = 0.0;
-	if x.is_sign_positive() {
-		loop {
-			if i > x {break}
-			i += 1.0
-		}
-		i-1.0
-	}
-	else {
-		loop {
-			if i < x {break}
-			i -= 1.0
-		}
-		i
-	}
+	x.floor()
 }
 fn ceil(x: f64) -> f64 {
 	if x == floor(x) {return x}
@@ -303,6 +293,47 @@ fn int(a: f64, b: f64, exprstart: usize, exprstop_tmp: usize, list_tmp: Vec<Vec<
 		}
 	}
 	((b-a)/n)*sum(0.0, n, exprstart, exprstop, list)
+}
+fn der(a: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>) -> f64 {
+	let mut list1: Vec<Vec<String>> = list_tmp.clone();
+	let mut list2: Vec<Vec<String>> = list_tmp.clone();
+	let mut exprstop1: usize = exprstop.clone();
+	let n: f64 = 100000000.0;
+	'outer: loop {
+		for ch in exprstart..=exprstop1 {
+			if list1[ch][1] == "x" {
+				let mut list_tmp_tmp = vec![vec![]];
+				list_tmp_tmp.remove(0);
+				for i in 0..ch {list_tmp_tmp.push(list1[i].clone())}
+				list_tmp_tmp.push(vec!["".to_string(), "(".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "(".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), n.to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "*".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), a.to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "+".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "1".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), ")".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), "/".to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), n.to_string()]);
+				list_tmp_tmp.push(vec!["".to_string(), ")".to_string()]);
+				for i in ch+1..list1.len() {list_tmp_tmp.push(list1[i].clone())}
+				list1 = list_tmp_tmp;
+				exprstop1 += 10
+			}
+			if ch == exprstop1 {break 'outer}
+		}
+	}
+	for ch in exprstart..=exprstop {
+		if list2[ch][1] == "x" {
+			let mut list_tmp_tmp = vec![vec![]];
+			list_tmp_tmp.remove(0);
+			for i in 0..ch {list_tmp_tmp.push(list2[i].clone())}
+			list_tmp_tmp.push(vec!["".to_string(), a.to_string()]);
+			for i in ch+1..list2.len() {list_tmp_tmp.push(list2[i].clone())}
+			list2 = list_tmp_tmp;
+		}
+	}
+	n*(evalu8(list1, exprstart, exprstop1) - evalu8(list2, exprstart, exprstop))
 }
 
 fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
@@ -501,6 +532,19 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 			println!("ERROR: int: no comma between arguments found"); std::process::exit(0)
 		}
 	}
+	par_count = 0;
+	for ch in lowerbound..=upperbound {
+		if list[ch][1] == "(" {par_count += 1}
+		if list[ch][1] == ")" {par_count -= 1}
+		if list[ch][1] == "der" && par_count == 0 {
+			for n in lowerbound+1..=upperbound {
+				if list[n][1] == "(" {par_count += 1}
+				if list[n][1] == ")" {par_count -= 1}
+				if list[n][1] == "," && par_count == 1 {return der(evalu8(list.clone(), lowerbound+2, n-1), n+1, upperbound-1, list)}
+			}
+			println!("ERROR: der: no comma between arguments found"); std::process::exit(0)
+		}
+	}
 	
 	if list[lowerbound][1] == "(" && list[upperbound][1] == ")" {return evalu8(list.clone(), lowerbound+1, upperbound-1)}
 	
@@ -509,11 +553,13 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 }
 
 fn main() {
+	println!("Enter your expression:");
 	loop{
-  	println!("Enter an expression:");
   	let mut expr = String::new();
   	let _ = io::stdin().read_line(&mut expr);
   	let listfromstring: Vec<Vec<String>> = listovac(expr.clone());
-  	println!("= {}", evalu8(listfromstring.clone(), 0, listfromstring.len()-1))
+  	let result: f64 = evalu8(listfromstring.clone(), 0, listfromstring.len()-1);
+  	if floor(result) == result {println!("= {}", result)}
+  	else {println!("≈ {}", result)}
   }
 }
