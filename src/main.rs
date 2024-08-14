@@ -8,8 +8,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   /*projíždím charactery expr zleva, přiřadím každému charu typ (a zkontroluji, zda je podporován), nakonec sloučím typy num a rightside_fn/const, které jsou vedle sebe
   	a na závěr rozdělím rightside_fn/const na rightside_fn a const a zkontroluji, jestli jsou sloučené funkce/konstanty podporovány)*/
   let list_of_expr_chars: Vec<char> = expr.chars().collect();
-  let mut list: Vec<Vec<String>> = vec![vec![]];
-  list.remove(0);
+  let mut list: Vec<Vec<String>> = vec![];
   //0->num 1->() 2->2side_fn 3->chars 4->comma 5->k (indexace u sumy a produktu) 6->x (integrační proměnná)
   let types_of_chars: Vec<Vec<String>> = vec![vec!["0".to_string(), "1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "5".to_string(), "6".to_string(), "7".to_string(), "8".to_string(), "9".to_string(), ".".to_string()], vec!["(".to_string(), ")".to_string()], vec!["+".to_string(), "-".to_string(), "*".to_string(), "/".to_string(), "^".to_string()], vec!["!".to_string(),	"a".to_string(), "b".to_string(), "c".to_string(), "d".to_string(), "e".to_string(), "f".to_string(), "g".to_string(), "h".to_string(), "i".to_string(), "j".to_string(), /*"k".to_string(),*/ "l".to_string(), "m".to_string(), "n".to_string(), "o".to_string(), "p".to_string(), "q".to_string(), "r".to_string(), "s".to_string(), "t".to_string(), "u".to_string(), "v".to_string(), "w".to_string(), /*"x".to_string(),*/ "y".to_string(), "z".to_string(), "W".to_string()], vec![",".to_string()], vec!["k".to_string()], vec!["x".to_string()]];
   let mut last_type: usize = 7;
@@ -80,8 +79,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 			list = minuslist
 		}
 		if list[ch][1] == "-" && (list[ch-1][1] == "(" || list[ch-1][1] == ",") {
-			let mut minuslist: Vec<Vec<String>> = vec![vec![]];
-			minuslist.remove(0);
+			let mut minuslist: Vec<Vec<String>> = vec![];
 			for h in 0..ch {minuslist.push(list[h].clone())}
 			minuslist.push(vec!["number".to_string(), "0".to_string()]);
 			for h in ch..list.len() {minuslist.push(list[h].clone())}
@@ -90,8 +88,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 	}
 	for ch in 0..list.len()-1 {//implicit multiplication
 		if list[ch][0] == "number" && list[ch+1][0] == "number" {
-			let mut implicitlist: Vec<Vec<String>> = vec![vec![]];
-			implicitlist.remove(0);
+			let mut implicitlist: Vec<Vec<String>> = vec![];
 			for h in 0..=ch {implicitlist.push(list[h].clone())}
 			implicitlist.push(vec!["binary_fn".to_string(), "*".to_string()]);
 			for h in ch+1..list.len() {implicitlist.push(list[h].clone())}
@@ -128,27 +125,16 @@ fn fact(n: f64) -> f64 {
 	n*fact(n-1.0)
 }
 fn sin(a: f64) -> f64 {
-	let mut x: f64 = a;
-	if x > 6.2831853071795864769 {
-		loop {
-			if x < 6.2831853071795864769 {break}
-			x -= 6.2831853071795864769;
-		}
-	}
-	if x < -6.2831853071795864769 {
-		loop {
-			if x > 0.0 {break}
-			x += 6.2831853071795864769;
-		}
-	}
+	let x: f64 = modulo(a, 6.2831853071795864769);
 	let mut res: f64 = 0.0;
 	let mut u: f64 = 1.0;
+	if x > 3.1415926535897932385 {return -sin(x - 3.1415926535897932385)}
+	if x > 1.57079632679489661923 {return sin(3.1415926535897932385 - x)}
 	for n in 0..=10 {
 		if n % 2 == 0 {u = 1.0}
 		else {u = -1.0}
 		res += u*(x.powf(2.0*(n as f64)+1.0))/fact(2.0*(n as f64)+1.0)
 	}
-	if x > 3.1415926535897932385 {return -sin(x - 3.1415926535897932385)}
 	res
 }
 fn cos(x: f64) -> f64 {
@@ -160,7 +146,7 @@ fn tan(x: f64) -> f64 {
 fn arcsin(x: f64) -> f64 {
 	if x > 1.0 || x < -1.0 {println!("ERROR: arcsin: argument not in the domain"); std::process::exit(0)}
   let mut res: f64 = 0.0;
-  for k in 0..2000 {
+  for k in 0..10000 {
     let mut prod: f64 = 1.0;
     for l in 0..k {
       prod *= (0.5 + (l as f64))/(1.0 + (l as f64))
@@ -264,13 +250,12 @@ fn prod(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, list_t
 }
 fn int(a: f64, b: f64, exprstart: usize, exprstop_tmp: usize, list_tmp: Vec<Vec<String>>) -> f64 {
 	let mut list: Vec<Vec<String>> = list_tmp.clone();
-	let n: f64 = 200000.0;
+	let n: f64 = 500000.0;
 	let mut exprstop: usize = exprstop_tmp.clone();
 	'outer: loop {
 		for ch in exprstart..=exprstop {
 			if list[ch][1] == "x" {
-				let mut list_tmp_tmp = vec![vec![]];
-				list_tmp_tmp.remove(0);
+				let mut list_tmp_tmp = vec![];
 				for i in 0..ch {list_tmp_tmp.push(list[i].clone())}
 				list_tmp_tmp.push(vec!["".to_string(), "(".to_string()]);
 				list_tmp_tmp.push(vec!["".to_string(), a.to_string()]);
@@ -292,18 +277,17 @@ fn int(a: f64, b: f64, exprstart: usize, exprstop_tmp: usize, list_tmp: Vec<Vec<
 			if ch == exprstop {break 'outer}
 		}
 	}
-	((b-a)/n)*sum(0.0, n, exprstart, exprstop, list)
+	((b-a)/n)*sum(1.0, n-1.0, exprstart, exprstop, list)
 }
 fn der(a: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>) -> f64 {
 	let mut list1: Vec<Vec<String>> = list_tmp.clone();
 	let mut list2: Vec<Vec<String>> = list_tmp.clone();
 	let mut exprstop1: usize = exprstop.clone();
-	let n: f64 = 100000000.0;
+	let n: f64 = 10000000.0;
 	'outer: loop {
 		for ch in exprstart..=exprstop1 {
 			if list1[ch][1] == "x" {
-				let mut list_tmp_tmp = vec![vec![]];
-				list_tmp_tmp.remove(0);
+				let mut list_tmp_tmp = vec![];
 				for i in 0..ch {list_tmp_tmp.push(list1[i].clone())}
 				list_tmp_tmp.push(vec!["".to_string(), "(".to_string()]);
 				list_tmp_tmp.push(vec!["".to_string(), "(".to_string()]);
@@ -325,8 +309,7 @@ fn der(a: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>) ->
 	}
 	for ch in exprstart..=exprstop {
 		if list2[ch][1] == "x" {
-			let mut list_tmp_tmp = vec![vec![]];
-			list_tmp_tmp.remove(0);
+			let mut list_tmp_tmp = vec![];
 			for i in 0..ch {list_tmp_tmp.push(list2[i].clone())}
 			list_tmp_tmp.push(vec!["".to_string(), a.to_string()]);
 			for i in ch+1..list2.len() {list_tmp_tmp.push(list2[i].clone())}

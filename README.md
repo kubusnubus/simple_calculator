@@ -9,7 +9,7 @@ A clumsily coded simple "smart" calculator, my first "real" coding project.
 
 ## USAGE:
 * Write your expression, press ENTER and the result will be written out.
-* At this point, the only allowed variables is 'k' for summation and 'x' for integration and differentiation (this way, the result will also be a number (or an error)).
+* At this point, the only allowed variables are 'k' for the sum and the product and 'x' for integration and differentiation (this way, the result will also be a number (or an error)).
 
 ## OTHER ERRORS:
 * A inequality between opening and closing parentheses will result in an error.
