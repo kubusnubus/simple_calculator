@@ -9,7 +9,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   	a na závěr rozdělím rightside_fn/const na rightside_fn a const a zkontroluji, jestli jsou sloučené funkce/konstanty podporovány)*/
   let list_of_expr_chars: Vec<char> = expr.chars().collect();
   let mut list: Vec<Vec<String>> = vec![];
-  //0->num 1->() 2->2side_fn 3->chars 4->comma 5->k (indexace u sumy a produktu) 6->x (integrační proměnná)
+  //0->num 1->() 2->binary_fn 3->chars (unary_fn/const) 4->comma 5->k (index_var) 6->x (int_var)
   let types_of_chars: Vec<Vec<String>> = vec![vec!["0".to_string(), "1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "5".to_string(), "6".to_string(), "7".to_string(), "8".to_string(), "9".to_string(), ".".to_string()], vec!["(".to_string(), ")".to_string()], vec!["+".to_string(), "-".to_string(), "*".to_string(), "/".to_string(), "^".to_string()], vec!["!".to_string(),	"a".to_string(), "b".to_string(), "c".to_string(), "d".to_string(), "e".to_string(), "f".to_string(), "g".to_string(), "h".to_string(), "i".to_string(), "j".to_string(), /*"k".to_string(),*/ "l".to_string(), "m".to_string(), "n".to_string(), "o".to_string(), "p".to_string(), "q".to_string(), "r".to_string(), "s".to_string(), "t".to_string(), "u".to_string(), "v".to_string(), "w".to_string(), /*"x".to_string(),*/ "y".to_string(), "z".to_string(), "W".to_string()], vec![",".to_string()], vec!["k".to_string()], vec!["x".to_string()]];
   let mut last_type: usize = 7;
   for ch in 0..expr.len() {
@@ -68,7 +68,6 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   		if fn_or_const == false {println!("ERROR: unsupported function/constant: {}", list[ch][1]); std::process::exit(0)}
   	}
   }
-  //println!("With constants: {:?}", list);
   let mut par_count: i32 = 0;
   for ch in 0..list.len() {
 		if list[ch][1] == "pi" {list[ch][1] = "3.14159265358979323846".to_string(); list[ch][0] = "number".to_string()}
@@ -105,6 +104,7 @@ fn listovac(expr_temp: String) -> Vec<Vec<String>> {
 		if list[ch][0] == "number" {break}
 		if ch == list.len()-1 {println!("ERROR: expression does not contain any numbers"); std::process::exit(0)}
 	}
+	//println!("{:?}", list);
   list
 }
 
@@ -127,13 +127,11 @@ fn fact(n: f64) -> f64 {
 fn sin(a: f64) -> f64 {
 	let x: f64 = modulo(a, 6.2831853071795864769);
 	let mut res: f64 = 0.0;
-	let mut u: f64 = 1.0;
 	if x > 3.1415926535897932385 {return -sin(x - 3.1415926535897932385)}
 	if x > 1.57079632679489661923 {return sin(3.1415926535897932385 - x)}
 	for n in 0..=10 {
-		if n % 2 == 0 {u = 1.0}
-		else {u = -1.0}
-		res += u*(x.powf(2.0*(n as f64)+1.0))/fact(2.0*(n as f64)+1.0)
+		if n % 2 == 0 {res += (x.powf(2.0*(n as f64)+1.0))/fact(2.0*(n as f64)+1.0)}
+		else {res -= (x.powf(2.0*(n as f64)+1.0))/fact(2.0*(n as f64)+1.0)}
 	}
 	res
 }
@@ -321,6 +319,7 @@ fn der(a: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>) ->
 
 fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 	if lowerbound == upperbound {return list[lowerbound][1].parse::<f64>().unwrap()}
+	if list[lowerbound][1] == "(" && list[upperbound][1] == ")" {return evalu8(list.clone(), lowerbound+1, upperbound-1)}
 	let mut par_count: u32 = 0;
 	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
@@ -349,188 +348,96 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 	for ch in lowerbound..=upperbound {
 		if list[ch][1] == "(" {par_count += 1}
 		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "^" && par_count == 0 {return power(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "mod" && par_count == 0 {return modulo(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "!" && par_count == 0 {return fact(evalu8(list.clone(), lowerbound, ch-1))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "sin" && par_count == 0 {return sin(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "cos" && par_count == 0 {return cos(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "tan" && par_count == 0 {return tan(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "asin" && par_count == 0 {return arcsin(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "acos" && par_count == 0 {return arccos(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "atan" && par_count == 0 {return arctan(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "exp" && par_count == 0 {return exp(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "ln" && par_count == 0 {return ln(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "log" && par_count == 0 {
-			for n in lowerbound+1..=upperbound {
-				if list[n][1] == "(" {par_count += 1}
-				if list[n][1] == ")" {par_count -= 1}
-				if list[n][1] == "," && par_count == 1 {return log(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, upperbound-1))}
+		if par_count == 0 {
+			if list[ch][0] == "binary_fn" {
+				if list[ch][1] == "^" {return power(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
+				if list[ch][1] == "mod" {return modulo(evalu8(list.clone(), lowerbound, ch-1), evalu8(list, ch+1, upperbound))}
 			}
-			println!("ERROR: log: no comma between arguments found"); std::process::exit(0)
-		}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "W" && par_count == 0 {
-			for n in lowerbound+1..=upperbound {
-				if list[n][1] == "(" {par_count += 1}
-				if list[n][1] == ")" {par_count -= 1}
-				if list[n][1] == "," && par_count == 1 {return productlog(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, upperbound-1))}
-			}
-			println!("ERROR: W: no comma between arguments found"); std::process::exit(0)
-		}
-	}
-	par_count = 0;
-		for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "sqrt" && par_count == 0 {return sqrt(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "floor" && par_count == 0 {return floor(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "ceil" && par_count == 0 {return ceil(evalu8(list.clone(), lowerbound+1, upperbound))}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "sum" && par_count == 0 {
-			for n in lowerbound+1..=upperbound {
-				if list[n][1] == "(" {par_count += 1}
-				if list[n][1] == ")" {par_count -= 1}
-				if list[n][1] == "," && par_count == 1 {
-					for k in n+1..=upperbound {
-						if list[k][1] == "(" {par_count += 1}
-						if list[k][1] == ")" {par_count -= 1}
-						if list[k][1] == "," && par_count == 1 {return sum(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
+			if list[ch][0] == "unary_fn" {
+				if list[ch][1] == "!" {return fact(evalu8(list.clone(), lowerbound, ch-1))}
+				if list[ch][1] == "sin" {return sin(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "cos" {return cos(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "tan" {return tan(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "asin" {return arcsin(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "acos" {return arccos(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "atan" {return arctan(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "exp" {return exp(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "ln" {return ln(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "log" {
+					for n in lowerbound+1..=upperbound {
+						if list[n][1] == "(" {par_count += 1}
+						if list[n][1] == ")" {par_count -= 1}
+						if list[n][1] == "," && par_count == 1 {return log(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, upperbound-1))}
 					}
-					println!("ERROR: sum: only one comma between arguments found"); std::process::exit(0)
+					println!("ERROR: log: no comma between arguments found"); std::process::exit(0)
+				}
+				if list[ch][1] == "W" {
+					for n in lowerbound+1..=upperbound {
+						if list[n][1] == "(" {par_count += 1}
+						if list[n][1] == ")" {par_count -= 1}
+						if list[n][1] == "," && par_count == 1 {return productlog(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, upperbound-1))}
+					}
+					println!("ERROR: W: no comma between arguments found"); std::process::exit(0)
+				}
+				if list[ch][1] == "sqrt" {return sqrt(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "floor" {return floor(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "ceil" {return ceil(evalu8(list.clone(), lowerbound+1, upperbound))}
+				if list[ch][1] == "sum" {
+					for n in lowerbound+1..=upperbound {
+						if list[n][1] == "(" {par_count += 1}
+						if list[n][1] == ")" {par_count -= 1}
+						if list[n][1] == "," && par_count == 1 {
+							for k in n+1..=upperbound {
+								if list[k][1] == "(" {par_count += 1}
+								if list[k][1] == ")" {par_count -= 1}
+								if list[k][1] == "," && par_count == 1 {return sum(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
+							}
+							println!("ERROR: sum: only one comma between arguments found"); std::process::exit(0)
+						}
+					}
+					println!("ERROR: sum: no comma between arguments found"); std::process::exit(0)
+				}
+				if list[ch][1] == "prod" {
+					for n in lowerbound+1..=upperbound {
+						if list[n][1] == "(" {par_count += 1}
+						if list[n][1] == ")" {par_count -= 1}
+						if list[n][1] == "," && par_count == 1 {
+							for k in n+1..=upperbound {
+								if list[k][1] == "(" {par_count += 1}
+								if list[k][1] == ")" {par_count -= 1}
+								if list[k][1] == "," && par_count == 1 {return prod(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
+							}
+							println!("ERROR: prod: only one comma between arguments found"); std::process::exit(0)
+						}
+					}
+					println!("ERROR: prod: no comma between arguments found"); std::process::exit(0)
+				}
+				if list[ch][1] == "int" {
+					for n in lowerbound+1..=upperbound {
+						if list[n][1] == "(" {par_count += 1}
+						if list[n][1] == ")" {par_count -= 1}
+						if list[n][1] == "," && par_count == 1 {
+							for k in n+1..=upperbound {
+								if list[k][1] == "(" {par_count += 1}
+								if list[k][1] == ")" {par_count -= 1}
+								if list[k][1] == "," && par_count == 1 {return int(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
+							}
+							println!("ERROR: int: only one comma between arguments found"); std::process::exit(0)
+						}
+					}
+					println!("ERROR: int: no comma between arguments found"); std::process::exit(0)
+				}
+				if list[ch][1] == "der" {
+					for n in lowerbound+1..=upperbound {
+						if list[n][1] == "(" {par_count += 1}
+						if list[n][1] == ")" {par_count -= 1}
+						if list[n][1] == "," && par_count == 1 {return der(evalu8(list.clone(), lowerbound+2, n-1), n+1, upperbound-1, list)}
+					}
+					println!("ERROR: der: no comma between arguments found"); std::process::exit(0)
 				}
 			}
-			println!("ERROR: sum: no comma between arguments found"); std::process::exit(0)
 		}
 	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "prod" && par_count == 0 {
-			for n in lowerbound+1..=upperbound {
-				if list[n][1] == "(" {par_count += 1}
-				if list[n][1] == ")" {par_count -= 1}
-				if list[n][1] == "," && par_count == 1 {
-					for k in n+1..=upperbound {
-						if list[k][1] == "(" {par_count += 1}
-						if list[k][1] == ")" {par_count -= 1}
-						if list[k][1] == "," && par_count == 1 {return prod(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
-					}
-					println!("ERROR: prod: only one comma between arguments found"); std::process::exit(0)
-				}
-			}
-			println!("ERROR: prod: no comma between arguments found"); std::process::exit(0)
-		}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "int" && par_count == 0 {
-			for n in lowerbound+1..=upperbound {
-				if list[n][1] == "(" {par_count += 1}
-				if list[n][1] == ")" {par_count -= 1}
-				if list[n][1] == "," && par_count == 1 {
-					for k in n+1..=upperbound {
-						if list[k][1] == "(" {par_count += 1}
-						if list[k][1] == ")" {par_count -= 1}
-						if list[k][1] == "," && par_count == 1 {return int(evalu8(list.clone(), lowerbound+2, n-1), evalu8(list.clone(), n+1, k-1), k+1, upperbound-1, list)}
-					}
-					println!("ERROR: int: only one comma between arguments found"); std::process::exit(0)
-				}
-			}
-			println!("ERROR: int: no comma between arguments found"); std::process::exit(0)
-		}
-	}
-	par_count = 0;
-	for ch in lowerbound..=upperbound {
-		if list[ch][1] == "(" {par_count += 1}
-		if list[ch][1] == ")" {par_count -= 1}
-		if list[ch][1] == "der" && par_count == 0 {
-			for n in lowerbound+1..=upperbound {
-				if list[n][1] == "(" {par_count += 1}
-				if list[n][1] == ")" {par_count -= 1}
-				if list[n][1] == "," && par_count == 1 {return der(evalu8(list.clone(), lowerbound+2, n-1), n+1, upperbound-1, list)}
-			}
-			println!("ERROR: der: no comma between arguments found"); std::process::exit(0)
-		}
-	}
-	
-	if list[lowerbound][1] == "(" && list[upperbound][1] == ")" {return evalu8(list.clone(), lowerbound+1, upperbound-1)}
-	
 	println!("Evaluation error");
 	std::process::exit(0)
 }
@@ -538,7 +445,8 @@ fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
 fn main() {
 	println!("Enter your expression:");
 	loop{
-  	let mut expr = String::new();
+  	let mut expr: String = String::new();
+  	//let expr: String = "int(0, 2pi, sin(x))".to_string();
   	let _ = io::stdin().read_line(&mut expr);
   	let listfromstring: Vec<Vec<String>> = listovac(expr.clone());
   	let result: f64 = evalu8(listfromstring.clone(), 0, listfromstring.len()-1);
