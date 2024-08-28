@@ -2,6 +2,7 @@ pub fn listovac(expr_temp: String) -> Vec<Vec<String>> {
   let mut expr = expr_temp;
   expr = expr.replace(" ", "");
   expr = expr.replace("\n", "");
+  expr = expr.replace("\r", "");
   //separating:
   /*projíždím charactery expr zleva, přiřadím každému charu typ (a zkontroluji, zda je podporován), nakonec sloučím typy num a rightside_fn/const, které jsou vedle sebe
   	a na závěr rozdělím rightside_fn/const na rightside_fn a const a zkontroluji, jestli jsou sloučené funkce/konstanty podporovány)*/
