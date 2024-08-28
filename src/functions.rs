@@ -11,7 +11,7 @@ pub fn power(a: f64, b: f64) -> f64 {a.powf(b)}
 pub fn fact(n: f64) -> f64 {
 	for k in 0..=21 {
 		if n == k as f64 {break}
-		if k == 21 {println!("ERROR: factorial: argument is not one of 0..=21"); std::process::exit(0)}
+		if k == 21 {println!("ERROR: factorial: argument is not one of 0..=21 (range limited for the sake of accuracy)"); std::process::exit(0)}
 	}
 	if n == 0.0 {return 1.0}
 	n*fact(n-1.0)
@@ -109,14 +109,11 @@ pub fn sum(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, lis
 	if floor(stop_tmp) != stop_tmp {println!("ERROR: sum: the second argument must be an integer"); std::process::exit(0)}
 	let start: usize = start_tmp.floor() as usize;
 	let stop: usize = stop_tmp.floor() as usize;
-	let mut list: Vec<Vec<String>> = list_tmp.clone();
 	let mut res: f64 = 0.0;
 	for n in start..=stop {
-		for ch in exprstart..=exprstop {
-			if list[ch][1] == "k" {list[ch][1] = n.to_string()}
-		}
+		let mut list: Vec<Vec<String>> = list_tmp.clone();
+		for ch in exprstart..=exprstop {if list[ch][1] == "k" {list[ch][1] = n.to_string()}}
 		res += eval::evalu8(list.clone(), exprstart, exprstop);
-		list = list_tmp.clone()
 	}
 	res
 }
@@ -125,14 +122,11 @@ pub fn prod(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, li
 	if floor(stop_tmp) != stop_tmp {println!("ERROR: prod: the second argument must be an integer"); std::process::exit(0)}
 	let start: usize = start_tmp.floor() as usize;
 	let stop: usize = stop_tmp.floor() as usize;
-	let mut list: Vec<Vec<String>> = list_tmp.clone();
 	let mut res: f64 = 1.0;
 	for n in start..=stop {
-		for ch in exprstart..=exprstop {
-			if list[ch][1] == "k" {list[ch][1] = n.to_string()}
-		}
+		let mut list: Vec<Vec<String>> = list_tmp.clone();
+		for ch in exprstart..=exprstop {if list[ch][1] == "k" {list[ch][1] = n.to_string()}}
 		res *= eval::evalu8(list.clone(), exprstart, exprstop);
-		list = list_tmp.clone()
 	}
 	res
 }
