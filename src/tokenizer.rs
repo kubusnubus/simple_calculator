@@ -173,6 +173,7 @@ pub fn listovac(expr_temp: String) -> Vec<Vec<String>> {
     }
     let mut par_count: i32 = 0;
     for ch in 0..list.len() {
+        //replacing constants with their approximations
         if list[ch][1] == "pi" {
             list[ch][1] = "3.14159265358979323846".to_string();
             list[ch][0] = "number".to_string()
@@ -181,6 +182,7 @@ pub fn listovac(expr_temp: String) -> Vec<Vec<String>> {
             list[ch][1] = "2.71828182845904523536".to_string();
             list[ch][0] = "number".to_string()
         }
+        //unary minus
         if list[ch][1] == "-" && ch == 0 {
             let mut minuslist: Vec<Vec<String>> = vec![vec!["number".to_string(), "0".to_string()]]; //unary minus => binary minus
             for h in 0..list.len() {
@@ -200,7 +202,7 @@ pub fn listovac(expr_temp: String) -> Vec<Vec<String>> {
             list = minuslist
         }
     }
-    for ch in 0..list.len() - 1 {
+    /*for ch in 0..list.len() - 1 {
         //implicit multiplication
         if list[ch][0] == "number" && list[ch + 1][0] == "number" {
             let mut implicitlist: Vec<Vec<String>> = vec![];
@@ -213,7 +215,9 @@ pub fn listovac(expr_temp: String) -> Vec<Vec<String>> {
             }
             list = implicitlist
         }
-    }
+    }*/
+
+    //for invalid count of parentheses
     for ch in 0..list.len() {
         if list[ch][1] == "(" {
             par_count += 1

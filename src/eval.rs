@@ -1,12 +1,29 @@
 use super::*;
 
 pub fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f64 {
+    //parsing numbers
     if lowerbound == upperbound {
         return list[lowerbound][1].parse::<f64>().unwrap();
     }
-    if list[lowerbound][1] == "(" && list[upperbound][1] == ")" {
+    //removing parentheses
+    //if there is left par earlier than a right par in a par block, then the pars of the block can be neglected
+    let mut right_par: bool = false;
+    'outer: for ch in lowerbound + 1..upperbound {
+        if list[ch][1] == "(" {
+            for k in lowerbound + 1..ch {
+                if list[k][1] == ")" {
+                    right_par = true;
+                    break 'outer;
+                }
+            }
+            break 'outer;
+        }
+    }
+    if !right_par && list[lowerbound][1] == "(" && list[upperbound][1] == ")" {
         return evalu8(list.clone(), lowerbound + 1, upperbound - 1);
     }
+
+
     let mut par_count: u32 = 0;
     for ch in lowerbound..=upperbound {
         if list[ch][1] == "(" {
@@ -76,13 +93,11 @@ pub fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f
             par_count -= 1
         }
         if par_count == 0 {
-            if list[ch][0] == "binary_fn" {
-                if list[ch][1] == "^" {
-                    return functions::power(
-                        evalu8(list.clone(), lowerbound, ch - 1),
-                        evalu8(list, ch + 1, upperbound),
-                    );
-                }
+            if list[ch][1] == "^" {
+                return functions::power(
+                    evalu8(list.clone(), lowerbound, ch - 1),
+                    evalu8(list, ch + 1, upperbound),
+                );
             }
             if list[ch][0] == "unary_fn" {
                 if list[ch][1] == "mod" {
@@ -163,7 +178,7 @@ pub fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f
                 if list[ch][1] == "ceil" {
                     return functions::ceil(evalu8(list.clone(), lowerbound + 1, upperbound));
                 }
-                if list[ch][1] == "sum" {
+                /*if list[ch][1] == "sum" {
                     for n in lowerbound + 1..=upperbound {
                         if list[n][1] == "(" {
                             par_count += 1
@@ -281,7 +296,7 @@ pub fn evalu8(list: Vec<Vec<String>>, lowerbound: usize, upperbound: usize) -> f
                     }
                     println!("ERROR: der: no comma between arguments found");
                     std::process::exit(0)
-                }
+                }*/
             }
         }
     }

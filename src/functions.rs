@@ -41,13 +41,13 @@ pub fn fact(n: f64) -> f64 {
 }
 
 pub fn sin(a: f64) -> f64 {
-    let x: f64 = modulo(a, 6.2831853071795864769);
+    let x: f64 = modulo(a, std::f64::consts::TAU);
     let mut res: f64 = 0.0;
-    if x > 3.1415926535897932385 {
-        return -sin(x - 3.1415926535897932385);
+    if x > std::f64::consts::PI {
+        return -sin(x - std::f64::consts::PI);
     }
-    if x > 1.57079632679489661923 {
-        return sin(3.1415926535897932385 - x);
+    if x > std::f64::consts::FRAC_PI_2 {
+        return sin(std::f64::consts::PI - x);
     }
     for n in 0..=10 {
         if n % 2 == 0 {
@@ -60,7 +60,7 @@ pub fn sin(a: f64) -> f64 {
 }
 
 pub fn cos(x: f64) -> f64 {
-    sin(x + 1.57079632679489661923)
+    sin(x + std::f64::consts::FRAC_PI_2)
 }
 
 pub fn tan(x: f64) -> f64 {
@@ -72,7 +72,7 @@ pub fn tan(x: f64) -> f64 {
 }
 
 pub fn arcsin(x: f64) -> f64 {
-    if x > 1.0 || x < -1.0 {
+    if !(-1.0..=1.0).contains(&x) {
         println!("ERROR: arcsin: argument not in the domain");
         std::process::exit(0)
     }
@@ -88,11 +88,11 @@ pub fn arcsin(x: f64) -> f64 {
 }
 
 pub fn arccos(x: f64) -> f64 {
-    if x > 1.0 || x < -1.0 {
+    if !(-1.0..=1.0).contains(&x) {
         println!("ERROR: arccos: argument not in the domain");
         std::process::exit(0)
     }
-    1.57079632679489661923 - arcsin(x)
+    std::f64::consts::FRAC_PI_2 - arcsin(x)
 }
 
 pub fn arctan(x: f64) -> f64 {
@@ -100,8 +100,7 @@ pub fn arctan(x: f64) -> f64 {
 }
 
 pub fn exp(x: f64) -> f64 {
-    let e: f64 = 2.71828182845904523536028;
-    e.powf(x)
+    std::f64::consts::E.powf(x)
 }
 
 pub fn ln(x: f64) -> f64 {
@@ -201,7 +200,7 @@ pub fn modulo(a: f64, b: f64) -> f64 {
     }
     a - b * floor(a / b)
 }
-
+/*
 pub fn sum(start_tmp: f64, stop_tmp: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>) -> f64 {
     if floor(start_tmp) != start_tmp {
         println!("ERROR: sum: the first argument must be an integer");
@@ -337,3 +336,4 @@ pub fn der(a: f64, exprstart: usize, exprstop: usize, list_tmp: Vec<Vec<String>>
     }
     n * (eval::evalu8(list1, exprstart, exprstop1) - eval::evalu8(list2, exprstart, exprstop))
 }
+*/
